@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Pass Verification System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Custom Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        .hero {
+            background: linear-gradient(45deg, #1a73e8, #ff6b6b);
+            color: #fff;
+            padding: 80px 0;
+        }
+
+        .profile-card {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .profile-card img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #1a73e8;
+        }
+
+        .tab-content {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .table th {
+            background-color: #1a73e8;
+            color: #fff;
+        }
+
+        .table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        /* Blinking Animation */
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .status-expired {
+            color: red;
+            animation: blink 1s infinite;
+        }
+
+        .status-active {
+            color: green;
+            animation: blink 1s infinite;
+        }
+
+        /* Preloader Styles */
+        .preloader {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+
+        .preloader .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1.1rem;
+            }
+
+            .profile-card img {
+                width: 100px;
+                height: 100px;
+            }
+
+            .profile-card h3 {
+                font-size: 1.3rem;
+            }
+
+            .profile-card p {
+                font-size: 0.9rem;
+            }
+
+            .tab-content {
+                padding: 15px;
+            }
+            .navtxt {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand navtxt" href="#">Smart Bus Pass Verification System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="home.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.html">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html">Contact</a>
+                    </li>
+                    <li class="nav-item dropdown active" id="login-logout-section">
+                        <!-- Dropdown will be populated dynamically -->
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero text-center">
+        <div class="container">
+            <h1 class="display-4">Smart Bus Pass Verification System</h1>
+            <p class="lead">Manage your bus pass, recharge, and check your travel history with ease!</p>
+        </div>
+    </section>
+
+    <!-- Dashboard -->
+    <section class="dashboard py-5">
+        <div class="container">
+            <div class="row g-4">
+                <!-- Profile Section -->
+                <div class="col-md-4">
+                    <div class="profile-card text-center">
+                        <img id="profile-picture" src="default-avatar.png" alt="Profile Picture">
+                        <h3 id="profileName">User Name</h3>
+                        <p id="profileEmail">user@example.com</p>
+                        <div class="details text-start">
+                            <p><strong>Age:</strong> <span id="age"></span></p>
+                            <p><strong>College:</strong> <span id="college"></span></p>
+                            <p><strong>DOB:</strong> <span id="dob"></span></p>
+                            <p><strong>Address:</strong> <span id="address"></span></p>
+                            <p><strong>Phone:</strong> <span id="phone"></span></p>
+                            <p><strong>State:</strong> <span id="state"></span></p>
+                            <p><strong>From:</strong> <span id="from"></span></p>
+                            <p><strong>To:</strong> <span id="to"></span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabbed Sections -->
+                <div class="col-md-8">
+                    <ul class="nav nav-pills mb-3" id="userTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link active" id="card-details-tab" data-bs-toggle="pill" href="#card-details" role="tab" aria-controls="card-details" aria-selected="true">Card Details</a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" id="recharge-history-tab" data-bs-toggle="pill" href="#recharge-history" role="tab" aria-controls="recharge-history" aria-selected="false">Recharge History</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <!-- Card Details Tab -->
+                        <div class="tab-pane fade show active" id="card-details" role="tabpanel" aria-labelledby="card-details-tab">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Card Details</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Card UID:</strong> <span id="carduid"></span></p>
+                                    <p><strong>Expiry Date:</strong> <span id="expiryDate"></span></p>
+                                    <p><strong>Validity:</strong> <span id="validity"></span></p>
+                                    <p><strong>Status:</strong> <span id="status"></span></p>
+                                    <a class="btn btn-primary" href="recharge.html" role="button">Recharge Card</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recharge History Tab -->
+                        <div class="tab-pane fade" id="recharge-history" role="tabpanel" aria-labelledby="recharge-history-tab">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Recharge History</h5>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Preloader -->
+                                    <div class="preloader" id="preloader">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </div>
+                                    <!-- Recharge History Table -->
+                                    <table class="table" id="recharge-history-table" style="display: none;">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Card UID</th>
+                                                <th>Amount</th>
+                                                <th>Payment ID</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="table-body"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Smart Bus Pass Verification System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA02GfjPGm1X8He9bLkrfkyBKWYgmMc98Q",
+            authDomain: "buspass-2025.firebaseapp.com",
+            databaseURL: "https://buspass-2025-default-rtdb.firebaseio.com",
+            projectId: "buspass-2025",
+            storageBucket: "buspass-2025.appspot.com",
+            messagingSenderId: "417197327685",
+            appId: "1:417197327685:web:42d2d9e773512f7ba1ea2c",
+            measurementId: "G-475C145WWK"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Check if user email exists in local storage
+        const userData = JSON.parse(localStorage.getItem('user'));
+
+        if (!userData || !userData.email) {
+            // Redirect to index.html if no email is found
+            window.location.href = "index.html";
+        } else {
+            // Display the user's email in the navbar
+            const loginLogoutSection = document.getElementById('login-logout-section');
+            loginLogoutSection.innerHTML = `
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    ${userData.email}
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <li><a class="dropdown-item" href="#" id="logout-btn">Logout</a></li>
+                </ul>
+            `;
+
+            // Fetch user details from RTDB
+            const userId = userData.uid;
+            const userRef = database.ref('users/' + userId);
+
+            userRef.once('value').then((snapshot) => {
+                const userDetails = snapshot.val();
+                if (userDetails && userDetails.cardUID) {
+                    const cardUID = userDetails.cardUID;
+
+                    // Fetch bus pass details using cardUID from the busPasses node
+                    const buspassRef = database.ref('busPasses/' + cardUID);
+                    buspassRef.once('value').then((buspassSnapshot) => {
+                        const buspassDetails = buspassSnapshot.val();
+                        if (buspassDetails) {
+                            // Display profile details
+                            document.getElementById('profile-picture').src = buspassDetails.profilePicture || 'https://via.placeholder.com/150';
+                            document.getElementById('profileName').textContent = buspassDetails.name || 'N/A';
+                            document.getElementById('age').textContent = buspassDetails.age || 'N/A';
+                            document.getElementById('college').textContent = buspassDetails.college || 'N/A';
+                            document.getElementById('dob').textContent = buspassDetails.dob || 'N/A';
+                            document.getElementById('profileEmail').textContent = buspassDetails.email || 'N/A';
+                            document.getElementById('address').textContent = buspassDetails.address || 'N/A';
+                            document.getElementById('phone').textContent = buspassDetails.phone || 'N/A';
+                            document.getElementById('state').textContent = buspassDetails.state || 'N/A';
+                            document.getElementById('from').textContent = buspassDetails.from || 'N/A';
+                            document.getElementById('to').textContent = buspassDetails.to || 'N/A';
+
+                            // Display card details
+                            document.getElementById('carduid').textContent = cardUID || 'N/A';
+                            document.getElementById('expiryDate').textContent = buspassDetails.expiryDate || 'N/A';
+                            document.getElementById('validity').textContent = buspassDetails.validity || 'N/A';
+
+                            // Calculate and display status
+                            const expiryDate = new Date(buspassDetails.expiryDate);
+                            const currentDate = new Date();
+                            const timeDifference = expiryDate - currentDate;
+                            const daysRemaining = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+
+                            const statusElement = document.getElementById('status');
+                            if (timeDifference < 0) {
+                                statusElement.innerHTML = `<span class="status-expired">Pass Expired</span>`;
+                            } else {
+                                statusElement.innerHTML = `<span class="status-active">Pass Active (${daysRemaining} days left)</span>`;
+                            }
+                        } else {
+                            document.getElementById('profile-section').innerHTML = "<p>No bus pass details found.</p>";
+                        }
+                    }).catch((error) => {
+                        console.error("Error fetching bus pass details:", error);
+                    });
+                } else {
+                    document.getElementById('profile-section').innerHTML = "<p>No card UID found for this user.</p>";
+                }
+            }).catch((error) => {
+                console.error("Error fetching user details:", error);
+            });
+        }
+
+        // Logout Functionality
+        document.addEventListener('click', function (event) {
+            if (event.target && event.target.id === 'logout-btn') {
+                // Remove user data from local storage
+                localStorage.removeItem('user');
+                // Redirect to index.html
+                window.location.href = "index.html";
+            }
+        });
+
+        // Dummy Recharge History Data
+        const dummyRechargeHistory = [
+            { date: "2024-01-01", amount: "₹300", paymentId: "PAY12345", status: "Success" },
+            { date: "2024-02-01", amount: "₹900", paymentId: "PAY67890", status: "Success" },
+            { date: "2024-03-01", amount: "₹1800", paymentId: "PAY11223", status: "Success" }
+        ];
+
+        // Simulate loading recharge history data
+        setTimeout(() => {
+            const preloader = document.getElementById('preloader');
+            const rechargeHistoryTable = document.getElementById('recharge-history-table');
+            const tableBody = document.getElementById('table-body');
+
+            // Hide preloader and show table
+            preloader.style.display = "none";
+            rechargeHistoryTable.style.display = "table";
+
+            // Populate table with dummy data
+            dummyRechargeHistory.forEach((item) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.date}</td>
+                    <td>${item.cardUID || 'N/A'}</td>
+                    <td>${item.amount}</td>
+                    <td>${item.paymentId}</td>
+                    <td>${item.status}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }, 2000); // Simulate a 2-second delay for loading data
+    </script>
+</body>
+</html>
