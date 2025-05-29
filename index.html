@@ -154,7 +154,7 @@
 
             <!-- Forgot Password and Create Account Links -->
             <a href="#" class="forgot-password">Forgot Password?</a>
-            <a href="signup.html" class="create-user">Create a new account</a>
+            <a href="signUp.html" class="create-user">Create a new account</a>
         </div>
     </div>
 
@@ -203,7 +203,7 @@
                     } else {
                         // New user, redirect to create profile page
                         localStorage.setItem('user', JSON.stringify({ uid, email }));
-                        window.location.href = "create.html";
+                        window.location.href = "home.html";
                     }
                 }).catch((error) => {
                     console.error("Database check error:", error);
