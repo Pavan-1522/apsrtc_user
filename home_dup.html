@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bus Pass Verification System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-        <style>
+    <style>
         /* Custom Styles */
         body {
             font-family: 'Arial', sans-serif;
@@ -117,40 +117,10 @@
                 font-size: 18px;
             }
         }
-        .status-blocked {
-        color: red;
-        font-weight: bolder;
-        }
-
-        .status-verified {
-        color: green;
-        font-weight: bolder;
-        }
-
-        .status-fraud {
-        color: red;
-        animation: blink 1s infinite;
-        font-weight: bolder;
-        }
-
-        .status-expired {
-        color: rgb(255, 153, 0);
-        animation: none;
-        font-weight: bolder;
-        }
-
-        /* Blinking animation for 'Fraud' status */
-        @keyframes blink {
-        0% { opacity: 1; }
-        50% { opacity: 0.2; }
-        100% { opacity: 1; }
-        }
-
     </style>
 </head>
 <body>
-    <!-- (Previous HTML content remains exactly the same until the JavaScript section) -->
-     
+
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container">
@@ -215,7 +185,7 @@
                             <a class="nav-link active" id="card-details-tab" data-bs-toggle="pill" href="#card-details" role="tab" aria-controls="card-details" aria-selected="true">Card Details</a>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <a class="nav-link" id="usage-history-tab" data-bs-toggle="pill" href="#usage-history" role="tab" aria-controls="usage-history" aria-selected="false">Usage History</a>
+                            <a class="nav-link" id="recharge-history-tab" data-bs-toggle="pill" href="#recharge-history" role="tab" aria-controls="recharge-history" aria-selected="false">Recharge History</a>
                         </li>
                     </ul>
                     <div class="tab-content">
@@ -235,34 +205,32 @@
                             </div>
                         </div>
 
-                        <!-- Usage History Tab -->
-                        <div class="tab-pane fade" id="usage-history" role="tabpanel" aria-labelledby="usage-history-tab">
+                        <!-- Recharge History Tab -->
+                        <div class="tab-pane fade" id="recharge-history" role="tabpanel" aria-labelledby="recharge-history-tab">
                             <div class="card">
                                 <div class="card-header">
-                                    <h5>Usage History</h5>
+                                    <h5>Recharge History</h5>
                                 </div>
                                 <div class="card-body">
                                     <!-- Preloader -->
-                                    <div class="preloader" id="usage-preloader">
+                                    <div class="preloader" id="preloader">
                                         <div class="spinner-border text-primary" role="status">
                                             <span class="visually-hidden">Loading...</span>
                                         </div>
                                     </div>
-                                    <!-- Usage History Table -->
-                                    <div class="table-responsive">
-                                        <table class="table" id="usage-history-table" style="display: none;">
-                                            <thead>
-                                                <tr>
-                                                    <th>Date & Time</th>
-                                                    <th>From</th>
-                                                    <th>To</th>
-                                                    <th>Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="usage-table-body"></tbody>
-                                        </table>
-                                    </div>
-                                    <div id="usage-error-message" class="alert alert-danger mt-3" style="display: none;"></div>
+                                    <!-- Recharge History Table -->
+                                    <table class="table" id="recharge-history-table" style="display: none;">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Card UID</th>
+                                                <th>Amount</th>
+                                                <th>Payment ID</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="table-body"></tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -278,13 +246,14 @@
             <p>&copy; 2024 Smart Bus Pass Verification System. All rights reserved.</p>
         </div>
     </footer>
+
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <script>
-        // Firebase Configuration (same as before)
-            
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyA02GfjPGm1X8He9bLkrfkyBKWYgmMc98Q",
             authDomain: "buspass-2025.firebaseapp.com",
@@ -300,16 +269,14 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // Global variable to store cardUID
-        let userCardUID = null;
-
         // Check if user email exists in local storage
         const userData = JSON.parse(localStorage.getItem('user'));
 
         if (!userData || !userData.email) {
+            // Redirect to index.html if no email is found
             window.location.href = "index.html";
         } else {
-            // Display user email in navbar (same as before)
+            // Display the user's email in the navbar
             const loginLogoutSection = document.getElementById('login-logout-section');
             loginLogoutSection.innerHTML = `
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -327,14 +294,14 @@
             userRef.once('value').then((snapshot) => {
                 const userDetails = snapshot.val();
                 if (userDetails && userDetails.cardUID) {
-                    userCardUID = userDetails.cardUID; // Store cardUID globally
+                    const cardUID = userDetails.cardUID;
 
-                    // Fetch bus pass details (same as before)
-                    const buspassRef = database.ref('busPasses/' + userCardUID);
+                    // Fetch bus pass details using cardUID from the busPasses node
+                    const buspassRef = database.ref('busPasses/' + cardUID);
                     buspassRef.once('value').then((buspassSnapshot) => {
                         const buspassDetails = buspassSnapshot.val();
                         if (buspassDetails) {
-                            // Display profile details (same as before)
+                            // Display profile details
                             document.getElementById('profile-picture').src = buspassDetails.profilePicture || 'https://via.placeholder.com/150';
                             document.getElementById('profileName').textContent = buspassDetails.name || 'N/A';
                             document.getElementById('age').textContent = buspassDetails.age || 'N/A';
@@ -348,7 +315,7 @@
                             document.getElementById('to').textContent = buspassDetails.to || 'N/A';
 
                             // Display card details
-                            document.getElementById('carduid').textContent = userCardUID || 'N/A';
+                            document.getElementById('carduid').textContent = cardUID || 'N/A';
                             document.getElementById('expiryDate').textContent = buspassDetails.expiryDate || 'N/A';
                             document.getElementById('validity').textContent = buspassDetails.validity || 'N/A';
 
@@ -364,133 +331,60 @@
                             } else {
                                 statusElement.innerHTML = `<span class="status-active">Pass Active (${daysRemaining} days left)</span>`;
                             }
+                        } else {
+                            document.getElementById('profile-section').innerHTML = "<p>No bus pass details found.</p>";
                         }
                     }).catch((error) => {
                         console.error("Error fetching bus pass details:", error);
                     });
+                } else {
+                    document.getElementById('profile-section').innerHTML = "<p>No card UID found for this user.</p>";
                 }
             }).catch((error) => {
                 console.error("Error fetching user details:", error);
             });
         }
 
-        // Logout Functionality (same as before)
+        // Logout Functionality
         document.addEventListener('click', function (event) {
             if (event.target && event.target.id === 'logout-btn') {
+                // Remove user data from local storage
                 localStorage.removeItem('user');
+                // Redirect to index.html
                 window.location.href = "index.html";
             }
         });
 
-        // Usage History Functions - Modified to use cardUID
-        async function fetchUsageData() {
-            if (!userCardUID) {
-                console.error("No cardUID available");
-                return null;
-            }
+        // Dummy Recharge History Data
+        const dummyRechargeHistory = [
+            { date: "2024-01-01", amount: "₹300", paymentId: "PAY12345", status: "Success" },
+            { date: "2024-02-01", amount: "₹900", paymentId: "PAY67890", status: "Success" },
+            { date: "2024-03-01", amount: "₹1800", paymentId: "PAY11223", status: "Success" }
+        ];
 
-            try {
-                // Replace with your actual API endpoint
-                const apiUrl = "https://sheetdb.io/api/v1/1qkxuve23djcu";
-                
-                const response = await fetch(apiUrl);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                
-                // Filter for current user's cardUID (assuming CardUID is in column B)
-                const userUsageData = data.filter(row => row.uid && row.uid.trim() === userCardUID.trim());
-                
-                // Sort by timestamp (newest first)
-                userUsageData.sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
-                
-                return userUsageData;
-            } catch (error) {
-                console.error("Error fetching usage data:", error);
-                throw error;
-            }
-        }
+        // Simulate loading recharge history data
+        setTimeout(() => {
+            const preloader = document.getElementById('preloader');
+            const rechargeHistoryTable = document.getElementById('recharge-history-table');
+            const tableBody = document.getElementById('table-body');
 
-        function formatDateTime(timestamp) {
-            if (!timestamp) return 'N/A';
-            try {
-                const date = new Date(timestamp);
-                return date.toLocaleString('en-IN', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true
-                });
-            } catch {
-                return timestamp;
-            }
-        }
+            // Hide preloader and show table
+            preloader.style.display = "none";
+            rechargeHistoryTable.style.display = "table";
 
-        async function displayUsageData() {
-            const preloader = document.getElementById('usage-preloader');
-            const table = document.getElementById('usage-history-table');
-            const tableBody = document.getElementById('usage-table-body');
-            const errorMessage = document.getElementById('usage-error-message');
-            
-            // Reset display
-            preloader.style.display = "flex";
-            table.style.display = "none";
-            errorMessage.style.display = "none";
-            tableBody.innerHTML = "";
-            
-            try {
-                const usageData = await fetchUsageData();
-                
-                preloader.style.display = "none";
-                
-                if (!usageData || usageData.length === 0) {
-                    tableBody.innerHTML = `
-                        <tr>
-                            <td colspan="4" class="text-center text-muted">
-                                No usage records found for your bus pass.
-                            </td>
-                        </tr>
-                    `;
-                    table.style.display = "table";
-                    return;
-                }
-                
-                // Populate table with data
-                usageData.forEach(item => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${formatDateTime(item.timestamp)}</td>
-                        <td>${item.deviceFrom || 'N/A'}</td>
-                        <td>${item.deviceTo || 'N/A'}</td>
-                        <td class="${
-                        item.status === 'Blocked' ? 'status-blocked' :
-                        item.status === 'Verified' ? 'status-verified' :
-                        item.status === 'Fraud' ? 'status-fraud' :
-                        item.status === 'Expired' ? 'status-expired' : ''
-                        }">
-                        ${item.status || 'N/A'}
-                        </td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-                
-                table.style.display = "table";
-                
-            } catch (error) {
-                preloader.style.display = "none";
-                errorMessage.textContent = "Error loading usage history. Please try again later.";
-                errorMessage.style.display = "block";
-                console.error("Error displaying usage data:", error);
-            }
-        }
-
-        // Initialize when tab is shown
-        document.getElementById('usage-history-tab')?.addEventListener('shown.bs.tab', displayUsageData);
+            // Populate table with dummy data
+            dummyRechargeHistory.forEach((item) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.date}</td>
+                    <td>${item.cardUID || 'N/A'}</td>
+                    <td>${item.amount}</td>
+                    <td>${item.paymentId}</td>
+                    <td>${item.status}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }, 2000); // Simulate a 2-second delay for loading data
     </script>
 </body>
 </html>
