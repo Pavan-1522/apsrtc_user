@@ -185,35 +185,57 @@
         const auth = firebase.auth();
         const database = firebase.database();
 
-        // Google Sign-In
-        document.getElementById('google-sign-in').addEventListener('click', function () {
-            const provider = new firebase.auth.GoogleAuthProvider();
+// Google Sign-In
+document.getElementById('google-sign-in').addEventListener('click', function () {
+    const provider = new firebase.auth.GoogleAuthProvider();
 
-            auth.signInWithPopup(provider).then((result) => {
-                const user = result.user;
-                const email = user.email;
-                const uid = user.uid;
+    auth.signInWithPopup(provider).then((result) => {
+        const user = result.user;
+        const email = user.email;
+        const uid = user.uid;
+        const displayName = user.displayName; // Get user's full name from Google
 
-                // Check if the user exists in the database
-                database.ref('users/' + uid).once('value').then((snapshot) => {
-                    if (snapshot.exists()) {
-                        // Existing user, redirect to home
-                        localStorage.setItem('user', JSON.stringify({ uid, email }));
+        // Check if the user exists in the database
+        database.ref('users/' + uid).once('value').then((snapshot) => {
+            if (snapshot.exists()) {
+                // Existing user, redirect to home
+                localStorage.setItem('user', JSON.stringify({ uid, email, displayName }));
+                window.location.href = "home.html";
+            } else {
+                // New user, create profile in database
+                const userData = {
+                    email: email,
+                    fullName: displayName,
+                    createdAt: firebase.database.ServerValue.TIMESTAMP,
+                    lastLogin: firebase.database.ServerValue.TIMESTAMP,
+                    cardUID : "testdata"
+                };
+
+                // Save user data to database
+                database.ref('users/' + uid).set(userData)
+                    .then(() => {
+                        // Store user data locally and redirect
+                        localStorage.setItem('user', JSON.stringify({ 
+                            uid, 
+                            email, 
+                            displayName 
+                        }));
                         window.location.href = "home.html";
-                    } else {
-                        // New user, redirect to create profile page
-                        localStorage.setItem('user', JSON.stringify({ uid, email }));
-                        window.location.href = "home.html";
-                    }
-                }).catch((error) => {
-                    console.error("Database check error:", error);
-                    alert(error.message);
-                });
-            }).catch((error) => {
-                console.error("Google Sign-In Error:", error);
-                alert(error.message);
-            });
+                    })
+                    .catch((error) => {
+                        console.error("Database write error:", error);
+                        alert("Error saving user profile. Please try again.");
+                    });
+            }
+        }).catch((error) => {
+            console.error("Database check error:", error);
+            alert(error.message);
         });
+    }).catch((error) => {
+        console.error("Google Sign-In Error:", error);
+        alert(error.message);
+    });
+});
 
         // Email Sign-In
         document.getElementById('login-form').addEventListener('submit', function (e) {

@@ -191,7 +191,10 @@
                 // Save user data to Firebase Database
                 database.ref('users/' + uid).set({
                     fullName: fullName,
-                    email: email
+                    email: email,
+                    createdAt: firebase.database.ServerValue.TIMESTAMP,
+                    lastLogin: firebase.database.ServerValue.TIMESTAMP,
+                    cardUID : "testdata"
                 }).then(() => {
                     // Save user data in localStorage
                     localStorage.setItem('user', JSON.stringify({ uid, email, fullName }));
